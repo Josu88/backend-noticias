@@ -3,12 +3,9 @@
 */
 
 const getDB = require('../../db/getDB');
-const {
-    generateError,
-    savePhoto,
-    deletePhoto,
-    validateSchema,
-} = require('../../helpers');
+const uuid = require('uuid');
+
+const { generateError, deletePhoto, validateSchema } = require('../../helpers');
 const idNewsSchema = require('../../schemas/idNewsSchema');
 
 const addNewsPhoto = async (req, res, next) => {
@@ -56,9 +53,8 @@ const addNewsPhoto = async (req, res, next) => {
             await deletePhoto(selectedNew.photo);
         }
 
-        // Ejecutamos la funcion savePhoto para guardar en el servidor la nueva foto de la noticia
-        // y guardamos en la variable photoName el nombre de la imagen que devuelve la función
-        const photoName = await savePhoto(req.files.photo); // 1 -> indica que lo guardamos en static/photos
+        // Generamos un nombre único para la imagen
+        const photoName = uuid.v4() + '.jpg';
 
         // Añadimos la foto de la noticia del usuario concreto a la base de datos
         await connection.query(`UPDATE news SET photo = ? WHERE id = ?`, [
@@ -70,7 +66,9 @@ const addNewsPhoto = async (req, res, next) => {
         res.send({
             status: 'Ok',
             message: '¡Foto de la Noticia añadida con éxito!',
-            data: { photo: photoName },
+            data: {
+                photo: photoName,
+            },
         });
     } catch (error) {
         next(error);
